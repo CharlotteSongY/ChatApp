@@ -108,7 +108,7 @@ public class Server {
 
                 UserSocket userSocket = userMap.get(id);
                 if (userSocket != null) {
-                    userSocket.send("ID:" + this.userId + " " + this.userName + "direct send you" + msg);
+                    userSocket.send("ID:" + this.userId + " " + this.userName + " "+ "direct send you" + newMsg);
                 }
             } else {
             Collection<UserSocket> values = userMap.values();

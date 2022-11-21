@@ -24,7 +24,6 @@ public class ClientSend implements Runnable{
 
     public void send() {
         try {
-            print("Input message and press ENTER\n");
             String message= scanner.nextLine();
             if (message != null && !"".equals(message)) {
                 int size = message.length();
