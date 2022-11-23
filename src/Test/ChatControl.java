@@ -1,8 +1,13 @@
 package Test;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -20,9 +25,10 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.net.URL;
+import java.util.ResourceBundle;
 
-
-public class ChatControl {
+public class ChatControl implements Initializable {
 
     static ObservableList<Node> children;
     static int msgIndex = 0;
@@ -32,59 +38,84 @@ public class ChatControl {
     @FXML
     private TextField txtInput;
     @FXML
-    private Button btnFile;
+    private Button btnSend;
     @FXML
     private VBox messagePane;
     @FXML
     private Label UsernameLabel;
 
-    private DataOutputStream out;
-    private DataInputStream in;
-    private boolean connection;
+//    public DataOutputStream out;
+//    public DataInputStream in;
+//    public boolean connection;
+    private Client client;
 
     public  static TransModel model = new TransModel();
 
     @FXML
-    protected void initialize() {
-        children = messagePane.getChildren();
-
-        messagePane.heightProperty().addListener(event -> {
-            scrollPane.setVvalue(1);
-        });
-
-        txtInput.setOnKeyPressed(event -> {
-            if (event.getCode().toString().equals("ENTER"))
-//                sendMessage();
-                displaySendMessage();
-        });
-
-        model.textProperty().addListener((obs, oldText, newText) -> UsernameLabel.setText(newText));
-        model.textProperty().addListener((obs, oldText, newText) -> {
-            try {
-                connect(newText);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-    }
-
-
-    public static void connect(String username) throws IOException {
-        Socket socket = null;
-        String name = null;
-        try {
-            socket = new Socket("127.0.0.1", 12345);
+    public void initialize(URL location,ResourceBundle resources) {
+        try{
+            client = new Client(new Socket("127.0.0.1", 12345));
             print("Connecting to %s:%d\n", "127.0.0.1", 12345);
-        } catch (IOException e) {
+        }catch (IOException e) {
             System.err.println("Connect failure!!!");
             e.printStackTrace();
         }
 
-        ExecutorService pool = Executors.newFixedThreadPool(2);
-        pool.submit(new ClientSend(socket, username));
-        pool.submit(new ClientReceive(socket));
+        model.textProperty().addListener((obs, oldText, newText) -> UsernameLabel.setText(newText));
+        model.textProperty().addListener((obs, oldText, newText) -> {
+//            try {
+//                client.login(newText);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+            client.login(newText);
+        });
+
+        children = messagePane.getChildren();
+
+//        messagePane.heightProperty().addListener(event -> {
+//            scrollPane.setVvalue(1);
+//        });
+
+        messagePane.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                scrollPane.setVvalue((Double) newValue);
+            }
+        });
+
+        client.receiveMessageFromServer(messagePane);
+
+        btnSend.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                String messageToSend = txtInput.getText();
+                if (messageToSend != null && !"".equals(messageToSend)) {
+                    children.add(messageNode(messageToSend,  true));
+                    client.sendMessageToServer(messageToSend);
+                    txtInput.clear();
+                }
+
+            }
+        });
     }
+
+
+//    public static void connect(String username) throws IOException {
+//        Socket socket = null;
+//        String name = null;
+//        try {
+//            socket = new Socket("127.0.0.1", 12345);
+//            print("Connecting to %s:%d\n", "127.0.0.1", 12345);
+//        } catch (IOException e) {
+//            System.err.println("Connect failure!!!");
+//            e.printStackTrace();
+//        }
+//
+//        ExecutorService pool = Executors.newFixedThreadPool(2);
+//        pool.submit(new ClientSend(socket, username));
+//        pool.submit(new ClientReceive(socket));
+//    }
 
     private static Node messageNode(String text, boolean alignToRight) {
         HBox box = new HBox();
@@ -98,14 +129,36 @@ public class ChatControl {
         return box;
     }
 
-    private void displaySendMessage() {
-        Platform.runLater(() -> {
-            String text = txtInput.getText();
-            txtInput.clear();
-            children.add(messageNode(text, msgIndex == 0));
-            msgIndex = (msgIndex + 1) % 2;
-        });
-    }
+//    private void displaySendMessage() {
+//        Platform.runLater(() -> {
+//            String message = "";
+//            try {
+//                message = txtInput.getText();
+//                if (message != null && !"".equals(message)) {
+//                    int size = message.length();
+//                    out.writeInt(size);
+//                    out.write(message.getBytes(), 0, size);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                connection = false;
+//            }
+////            String text = txtInput.getText();
+////            txtInput.clear();
+//            children.add(messageNode(message, msgIndex == 0));
+//            msgIndex = (msgIndex + 1) % 2;
+//        });
+//    }
+
+//    private void displaySendMessage() {
+//        Platform.runLater(() -> {
+//            String text = txtInput.getText();
+//            txtInput.clear();
+//            children.add(messageNode(text, msgIndex == 0));
+//            msgIndex = (msgIndex + 1) % 2;
+//        });
+//    }
+
 
 //    public void sendMessage(){
 //        String text = txtInput.getText();
@@ -114,8 +167,7 @@ public class ChatControl {
 
     public static void displayReceiveMessage(String receiveText) {
         Platform.runLater(() -> {
-            children.add(messageNode(receiveText, msgIndex == 1));
-            msgIndex = (msgIndex + 1) % 2;
+            children.add(messageNode(receiveText, false));
         });
     }
 

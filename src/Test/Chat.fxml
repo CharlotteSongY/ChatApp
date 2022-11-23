@@ -35,7 +35,7 @@
             <TextField fx:id="txtInput" maxWidth="540.0" prefHeight="20.0" prefWidth="540.0" BorderPane.alignment="CENTER" />
          </center>
          <right>
-            <Button fx:id="btnFile" mnemonicParsing="false" prefHeight="20.0" prefWidth="60.0" style="-fx-background-color: #FCB97D;" text="File" BorderPane.alignment="CENTER" />
+            <Button fx:id="btnSend" mnemonicParsing="false" prefHeight="20.0" prefWidth="60.0" style="-fx-background-color: #FCB97D;" text="Send" BorderPane.alignment="CENTER" />
          </right>
       </BorderPane>
    </bottom>

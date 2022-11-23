@@ -76,7 +76,7 @@ public class LoginControl{
             Stage chatStage = new Stage();
             chatStage.setScene(new Scene(root));
             chatStage.setTitle("Chat");
-            chatStage.setMinWidth(600);
+            chatStage.setMaxWidth(600);
             chatStage.setMinHeight(400);
             //do the creating UI
             chatStage.show();

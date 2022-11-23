@@ -17,7 +17,7 @@ public class App extends Application {
         Parent root = Loader.load();
         primaryStage.setScene(new Scene(root));
         primaryStage.setTitle("Login");
-        primaryStage.setMinWidth(600);
+        primaryStage.setMaxWidth(300);
         primaryStage.setMinHeight(400);
         //do the creating UI
         primaryStage.show();
