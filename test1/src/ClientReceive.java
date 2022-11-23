@@ -1,3 +1,5 @@
+
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -5,6 +7,7 @@ import java.net.Socket;
 public class ClientReceive implements Runnable {
     private DataInputStream in;
     private boolean connection;
+    public ChatControl controller;
 
     public static void print(String str, Object... o) {
         System.out.printf(str, o);
@@ -37,6 +40,9 @@ public class ClientReceive implements Runnable {
             connection = false;
         }
         print(message + "\n");
+        ChatControl.displayReceiveMessage(message);
+
+        //return message;
     }
 
     @Override
@@ -46,3 +52,4 @@ public class ClientReceive implements Runnable {
         }
     }
 }
+

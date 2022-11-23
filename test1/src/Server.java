@@ -1,3 +1,5 @@
+
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,7 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 //import java.util.ArrayList;
 
-public class Server{
+public class Server {
     private HashMap<Integer, UserSocket> userMap;
     private int count = 0;
     public Server() {
@@ -45,7 +47,6 @@ public class Server{
         public UserSocket(int userId, Socket socket) {
             this.userId = userId;
 
-            //make sure connection is ok
             try {
                 in = new DataInputStream(socket.getInputStream());
                 out = new DataOutputStream(socket.getOutputStream());
@@ -55,7 +56,6 @@ public class Server{
                 connection = false;
             }
 
-            //add user name
             try {
                 if (in != null) {
                     byte[] buffer = new byte[1024];
@@ -68,8 +68,8 @@ public class Server{
                     }
                     this.userName = name;
                 }
-                sendOther("ID:" + this.userId + " " + this.userName + " is come to the chat", true);
-                send("welcome to chat room");
+                sendOther("ID:" + this.userId + " " + this.userName + "send to you  ", true);
+                send("welcome to chat room "+  this.userName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -113,17 +113,17 @@ public class Server{
                     userSocket.send("ID:" + this.userId + " " + this.userName + " "+ "direct send you" + newMsg);
                 }
             } else {
-            Collection<UserSocket> values = userMap.values();
-            for (UserSocket userSocket : values) {
-                if (userSocket != this) {
-                    if (sys) {
-                        userSocket.send("System message:" + msg);
-                    } else {
-                        userSocket.send("ID:" + this.userId + " " + this.userName + msg);
+                Collection<UserSocket> values = userMap.values();
+                for (UserSocket userSocket : values) {
+                    if (userSocket != this) {
+                        if (sys) {
+                            userSocket.send("System message:" + msg);
+                        } else {
+                            userSocket.send("ID:" + this.userId + " " + this.userName + msg);
+                        }
                     }
                 }
             }
-        }
         }
 
         @Override

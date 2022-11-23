@@ -1,3 +1,4 @@
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,13 +14,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
+
+
 
 public class LoginControl{
     @FXML
     private TextField UserNameTextField;
-    @FXML
-    private PasswordField PasswordTextField;
+//    @FXML
+//    private PasswordField PasswordTextField;
     @FXML
     private Button LoginBtn;
     @FXML
@@ -30,9 +32,16 @@ public class LoginControl{
     private DataOutputStream out;
     private DataInputStream in;
     private boolean connection;
-    private Scanner scanner;
+//    private Scanner scanner;
+
+
+    @FXML
+    public void Initialize(){
+
+    }
 
     public void LoginBtnOnAction(ActionEvent event){
+//        && PasswordTextField.getText().isEmpty()  == false
         if(UserNameTextField.getText().isEmpty() == false){
             validateLogin();
         }else{
@@ -46,38 +55,26 @@ public class LoginControl{
     }
 
     public void validateLogin(){
+//        UserNameTextField.getText().equals("name")
         if(UserNameTextField.getText().isEmpty() == false){
             Stage stage = (Stage) LoginBtn.getScene().getWindow();
-
-            Socket socket = null;
-            String name = null;
-            try {
-                socket = new Socket("127.0.0.1", 12345);
-                name = UserNameTextField.getText();
-            } catch (IOException e) {
-                System.err.println("Connect failure!!!");
-                e.printStackTrace();
-            }
-//
-//            ExecutorService pool = Executors.newFixedThreadPool(2);
-//            pool.submit(new ClientSend(socket, name));
-//            pool.submit(new ClientReceive(socket));
-
             stage.close();
-            turnToChat(socket);
+            turnToChat();
         }else {
             LoginMessageLabel.setText("Invalid, try again");
         }
         //turnToChat();
     }
 
-    public void turnToChat(Socket socket){
+    public void turnToChat(){
         try {
             FXMLLoader Loader = new FXMLLoader(getClass().getResource("Chat.fxml"));
             Parent root = Loader.load();
+            ChatControl control = (ChatControl) Loader.getController();
+            control.model.setText(UserNameTextField.getText());
             Stage chatStage = new Stage();
             chatStage.setScene(new Scene(root));
-            chatStage.setTitle("Login");
+            chatStage.setTitle("Chat");
             chatStage.setMinWidth(600);
             chatStage.setMinHeight(400);
             //do the creating UI
@@ -88,4 +85,7 @@ public class LoginControl{
         }
 
     }
+
+
+
 }

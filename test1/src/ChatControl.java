@@ -1,3 +1,5 @@
+//cd .\out\production\test1\
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -12,13 +14,21 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import java.io.*;
+import java.util.Scanner;
+
 
 public class ChatControl {
 
-    ObservableList<Node> children;
-    int msgIndex = 0;
+    static ObservableList<Node> children;
+    static int msgIndex = 0;
+
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -27,9 +37,18 @@ public class ChatControl {
     private Button btnFile;
     @FXML
     private VBox messagePane;
+    @FXML
+    private Label UsernameLabel;
 
-    private DataInputStream in;
-    private boolean connection;
+    private static DataOutputStream out;
+    private static DataInputStream in;
+    private static boolean connection;
+    private Scanner scanner;
+
+    static Socket socket = null;
+    static String name = null;
+
+    public  static TransModel model = new TransModel();
 
     @FXML
     protected void initialize() {
@@ -41,11 +60,43 @@ public class ChatControl {
 
         txtInput.setOnKeyPressed(event -> {
             if (event.getCode().toString().equals("ENTER"))
-                displayMessage();
+                displaySendMessage();
         });
+
+        model.textProperty().addListener((obs, oldText, newText) -> UsernameLabel.setText(newText));
+        model.textProperty().addListener((obs, oldText, newText) -> {
+            try {
+                connect(newText);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 
-    private Node messageNode(String text, boolean alignToRight) {
+
+    public static void connect(String username) throws IOException {
+        Socket socket = null;
+        String name = null;
+        try {
+            socket = new Socket("127.0.0.1", 12345);
+            print("Connecting to %s:%d\n", "127.0.0.1", 12345);
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
+            login(out, username);
+            name = username;
+            connection = true;
+        } catch (IOException e) {
+            System.err.println("Connect failure!!!");
+            e.printStackTrace();
+        }
+
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+//        pool.submit(new ClientSend(socket, username));
+        pool.submit(new ClientReceive(socket));
+    }
+
+    private static Node messageNode(String text, boolean alignToRight) {
         HBox box = new HBox();
         box.paddingProperty().setValue(new Insets(10, 10, 10, 10));
 
@@ -57,43 +108,43 @@ public class ChatControl {
         return box;
     }
 
-    private void displayMessage() {
+    private void displaySendMessage() {
         Platform.runLater(() -> {
+            String message ="";
+            try {
+                message= txtInput.getText();
+                if (message != null && !"".equals(message)) {
+                    int size = message.length();
+                    out.writeInt(size);
+                    out.write(message.getBytes(), 0, size);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                connection = false;
+            }
 //            String text = txtInput.getText();
-            String message = "";
-
-            txtInput.clear();
+//            txtInput.clear();
             children.add(messageNode(message, msgIndex == 0));
-//            children.add(messageNode(text, msgIndex == 0));
             msgIndex = (msgIndex + 1) % 2;
         });
     }
 
-    public void ClientReceive(Socket socket) {
-        try {
-            in = new DataInputStream(socket.getInputStream());
-            connection = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            connection = false;
+    public static void login(DataOutputStream out, String userName){
+        try{out.writeInt(userName.length());
+            out.write(userName.getBytes(),0,userName.length());
+        } catch(IOException e){
+            System.err.println("login failure");
         }
     }
 
-    public void receive(String message) {
-        try {
-            byte[] buffer = new byte[1024];
-
-            int size = in.readInt();
-            while(size > 0) {
-                int len = in.read(buffer, 0, Math.min(size, buffer.length));
-                message += new String(buffer, 0, len);
-                size -= len;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            connection = false;
-        }
-//        print(message + "\n");
+    public static void displayReceiveMessage(String receiveText) {
+        Platform.runLater(() -> {
+            children.add(messageNode(receiveText, msgIndex == 1));
+            msgIndex = (msgIndex + 1) % 2;
+        });
     }
 
+    public static void print(String str, Object... o) {
+        System.out.printf(str, o);
+    }
 }
