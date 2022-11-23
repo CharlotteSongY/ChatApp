@@ -11,18 +11,29 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+
+
 
 public class LoginControl{
     @FXML
     private TextField UserNameTextField;
-    @FXML
-    private PasswordField PasswordTextField;
+//    @FXML
+//    private PasswordField PasswordTextField;
     @FXML
     private Button LoginBtn;
     @FXML
     private Button CancelBtn;
     @FXML
     private Label LoginMessageLabel;
+
+    private DataOutputStream out;
+    private DataInputStream in;
+    private boolean connection;
+//    private Scanner scanner;
 
 
     @FXML
@@ -31,10 +42,11 @@ public class LoginControl{
     }
 
     public void LoginBtnOnAction(ActionEvent event){
-        if(UserNameTextField.getText().isEmpty() == false && PasswordTextField.getText().isEmpty() == false){
+//        && PasswordTextField.getText().isEmpty()  == false
+        if(UserNameTextField.getText().isEmpty() == false){
             validateLogin();
         }else{
-            LoginMessageLabel.setText("Please enter your unsername and password");
+            LoginMessageLabel.setText("Please enter your unsername");
         }
     }
 
@@ -44,7 +56,8 @@ public class LoginControl{
     }
 
     public void validateLogin(){
-        if(UserNameTextField.getText().equals("name") && PasswordTextField.getText().equals("password")){
+//        UserNameTextField.getText().equals("name")
+        if(UserNameTextField.getText().isEmpty() == false){
             Stage stage = (Stage) LoginBtn.getScene().getWindow();
             stage.close();
             turnToChat();
@@ -58,9 +71,11 @@ public class LoginControl{
         try {
             FXMLLoader Loader = new FXMLLoader(getClass().getResource("Chat.fxml"));
             Parent root = Loader.load();
+            ChatControl control = (ChatControl) Loader.getController();
+            control.model.setText(UserNameTextField.getText());
             Stage chatStage = new Stage();
             chatStage.setScene(new Scene(root));
-            chatStage.setTitle("Login");
+            chatStage.setTitle("Chat");
             chatStage.setMinWidth(600);
             chatStage.setMinHeight(400);
             //do the creating UI
