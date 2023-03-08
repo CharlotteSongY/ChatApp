@@ -1,18 +1,4 @@
 # ChatApp
-
-###Login and page changes
-The login process can be test through the 'src/Test/App.java'.
-
-And the test login name is being set as 'name' the corresponding password being set as 'password'.
-
-After complete the login, the page will jump to the chat window, and the layout of the chat window is done.
-
-note: if the wrong name/password input, a reminder will show like " invalid, try again"
-
-```Todo1: complete the username and password database during the serve part. login message need to send to serve```
-
-```Todo2: set the place for entering the username of the one you want to commucate with, also need to send to serve```
-
-###serve
-
-###client
+This project is use the socketprogramming and GUI to realise chatapp which contain server and the client.
+The requirement of the project you can see in the "group require.pdf" file.
+And the report you can see in the "3015 group project.pdf" file.
